@@ -42,7 +42,7 @@ func server(port int, path string) *http.Server {
 
 func siteReplication() {
 	logger.Printf("Executing site replication on %s ...", CFG.target)
-	cmd := exec.Command("rsync", "--progress", "-azvh", CFG.target, CFG.destination)
+	cmd := exec.Command("rsync", "-azv", CFG.target, CFG.destination)
 
 	var buf bytes.Buffer
 
@@ -57,6 +57,7 @@ func main() {
 	numServers := flag.Int("ns", 3, "Number of servers")
 	trgt := flag.String("t", "/root", "Target to replicate")
 	dst := flag.String("d", "/root", "Destination for replication")
+	replicate := flag.Bool("r", false, "Execute site replication")
 	flag.Parse()
 
 	curUser, err = user.Current()
@@ -91,10 +92,12 @@ func main() {
 		}(i)
 	}
 
-	s := gocron.NewScheduler()
-	s.Every(5).Minutes().Do(siteReplication)
-	logger.Println("Starting gocron ...")
-	<-s.Start()
+	if *replicate {
+		s := gocron.NewScheduler()
+		s.Every(5).Minutes().Do(siteReplication)
+		logger.Println("Starting gocron ...")
+		<-s.Start()
+	}
 
 	wg.Wait()
 }
