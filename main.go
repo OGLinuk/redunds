@@ -55,6 +55,7 @@ func siteReplication() {
 
 func main() {
 	numServers := flag.Int("ns", 3, "Number of servers")
+	fsPath := flag.String("fsp", ".", "Fileserver path")
 	trgt := flag.String("t", "/root", "Target to replicate")
 	dst := flag.String("d", "/root", "Destination for replication")
 	replicate := flag.Bool("r", false, "Execute site replication")
@@ -85,7 +86,7 @@ func main() {
 		wg.Add(1)
 		go func(i int) {
 			basePort++
-			srv := server(basePort, ".")
+			srv := server(basePort, *fsPath)
 			logger.Printf("Starting server[%d] on %s...", i, srv.Addr)
 			srv.ListenAndServe()
 			defer wg.Done()
